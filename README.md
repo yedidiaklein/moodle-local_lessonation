@@ -36,7 +36,7 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 
 ## License
 
-This plugin is licensed under the [MIT License](LICENSE).
+This plugin is provided freely as open source software, under version 3 of the GNU General Public License.
 
 ## Support
 
