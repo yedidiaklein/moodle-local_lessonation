@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<XMLDB PATH="local/lessonation/db" VERSION="2025042000" COMMENT="XMLDB file for local_lessonation"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://www.w3.org/2001/XMLSchema-instance">
+    <TABLES>
+        <TABLE NAME="local_lessonation" COMMENT="Table to store lessonation data">
+            <FIELDS>
+                <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Primary key"/>
+                <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="User ID"/>
+                <FIELD NAME="adhocid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Adhoc task ID"/>
+                <FIELD NAME="lessonid" TYPE="int" LENGTH="10" NOTNULL="true" COMMENT="Created Lesson ID"/>
+                <FIELD NAME="state" TYPE="char" LENGTH="255" NOTNULL="true" COMMENT="State of the creation process"/>
+            </FIELDS>
+            <KEYS>
+                <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+            </KEYS>
+            <INDEXES>
+                <INDEX NAME="adhocid" UNIQUE="true" FIELDS="adhocid"/>
+            </INDEXES>
+        </TABLE>
+    </TABLES>
+</XMLDB>

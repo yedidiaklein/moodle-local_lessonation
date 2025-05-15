@@ -40,10 +40,12 @@ class generate extends \moodleform {
         $mform = $this->_form; // Don't forget the underscore!
 
         // Add elements to your form.
-        $mform->addElement('url', 'url', get_string('url'));
+        $mform->addElement('text', 'url', get_string('subject','local_lessonation'),
+                            'maxlength="255" size="255"');
 
-        // Set type of element.
-        $mform->setType('url', PARAM_URL);
+        // Set type of element to text.
+        $mform->setType('url', PARAM_TEXT);
+
 
         // Default value.
         $mform->setDefault('url', 'https://en.wikipedia.org/wiki/Moodle_(software)');
@@ -60,10 +62,14 @@ class generate extends \moodleform {
         $courseid = optional_param('courseid', 0, PARAM_INT);
         $mform->setDefault('courseid', $courseid); // Example course ID.
 
-        // Add a button to submit the form.
-        $mform->addElement('submit', 'submitbutton', get_string('submit'));
-        // Add a button to cancel the form.
-        $mform->addElement('cancel', 'cancelbutton', get_string('cancel'));
+        // Add a container for the buttons.
+        $buttonarray = [];
+        $buttonarray[] = $mform->createElement('submit', 'submitbutton', get_string('submit'));
+        $buttonarray[] = $mform->createElement('cancel', 'cancelbutton', get_string('cancel'));
+
+        // Add the button array to the form.
+        $mform->addGroup($buttonarray, 'buttonar', '', [' '], false);
+        $mform->setType('buttonar', PARAM_RAW);
     }
 
     // Custom validation should be added here.

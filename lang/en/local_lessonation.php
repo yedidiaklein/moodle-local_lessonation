@@ -32,3 +32,5 @@ $string['lessonationdescription_help'] = 'Lessonation is a plugin that generates
 $string['lessoncreated'] = 'Lesson created successfully';
 $string['clickhere'] = 'Click here to view the lesson';
 $string['error'] = 'Error in lesson creation';
+$string['subject'] = 'Subject or URL';
+$string['lessonincreation'] = 'Lesson is being created. You will be notified when it is ready.';

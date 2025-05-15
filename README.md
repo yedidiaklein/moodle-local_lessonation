@@ -20,15 +20,15 @@ Lessonation is a local plugin for Moodle designed to dynamically create lessons 
 
 ## Usage
 
-1. Navigate to the Lessonation plugin in your Moodle course.
-2. Provide the source content (course materials, website URLs, or text).
+1. Navigate to the Lessonation link on top menu in your Moodle course.
+2. Provide the source content (website URLs or subject).
 3. Click "Generate Lesson" to create AI-powered lessons.
-4. Review and customize the generated lessons as needed.
+4. your lesson will be generated using adhoc task and will appear in your course shortly.
 
 ## Requirements
 
 - Moodle 4.5 or higher
-- AI API key (e.g., OpenAI, Azure AI)
+- AI API key (e.g., OpenAI, Azure AI) in Moodle AI settings.
 
 ## Contributing
 

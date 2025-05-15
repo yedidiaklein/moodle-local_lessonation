@@ -183,17 +183,43 @@ class create {
         return $module_id;
     }
 
-    public static function get_lesson_data($lesson_id) {
-        global $DB;
+    /**
+     * Prepares lesson data for the AI task.
+     *
+     * @param object $fromform The form data containing the URL and number of slides.
+     * @return int The ID of the queued task.
+     */
+    public static function prepare_lesson_data($fromform) {
+        global $USER;
 
-        // Check if the lesson ID is valid.
-        if (!$lesson_id || !is_numeric($lesson_id)) {
-            throw new invalid_parameter_exception('Invalid lesson ID');
-        }
+        $num = $fromform->numberofslides;
+        $prompt = 'build me a presentation of ' . $num . ' slides based on the content of the following webpage: ' . $fromform->url .
+                  ' In the following format :
+                { "name": "Lesson Name Test",
+                  "description": "Lesson Description Testing",
+                  "slides": 
+                    [ { "title": "Slide 1 Title",
+                        "content": "<h1>Slide 1 Content</h1><ul><li>Item 1</li><li>Item 2</li>li>Item 3</li>li>Item 4</li></ul>" },
+                      { "title": "Slide 2 Title",
+                        "content": "<h1>Slide 2 Content</h1><ul><li>Item 3</li><li>Item 4</li>li>Item 3</li>li>Item 4</li></ul>" } ]
+                }
+                Use bullet points in the slides.';
 
-        // Fetch lesson data from the database.
-        $lesson = $DB->get_record('lesson', array('id' => $lesson_id), '*', MUST_EXIST);
+        // Create a new instance of the custom adhoc task.
+        $task = new \local_lessonation\task\offlinegen();
+        $task->set_custom_data([
+            'prompt' => $prompt,
+            'courseid' => $fromform->courseid,
+            'userid' => $USER->id,
+        ]);
+        $task->set_component('local_lessonation');
+        $task->set_userid($USER->id);
+        $task->set_timecreated(time());
 
-        return $lesson;
+        // Queue the task.
+        $taskid = \core\task\manager::queue_adhoc_task($task);
+
+        return $taskid;
     }
+
 }

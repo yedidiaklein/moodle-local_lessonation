@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_lessonation'; // Full name of the plugin (used for diagnostics).
-$plugin->version   = 2025042000;         // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 20250051300;         // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2022041900;         // Requires this Moodle version.
 $plugin->maturity  = MATURITY_STABLE;    // This is a stable version.
 $plugin->release   = '1.0.0';            // This is the plugin release version.

@@ -23,20 +23,23 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- require_once(__DIR__ . '/../../config.php');
+require_once(__DIR__ . '/../../config.php');
 
 defined('MOODLE_INTERNAL') || die();
 
+// Check that the user is enrolled in the course.
+$courseid = required_param('courseid', PARAM_INT);
+require_login($courseid);
+
 // show a form to create a lesson
-$PAGE->set_url(new moodle_url('/local/lessonation/generate_form.php'));
+$PAGE->set_url(new moodle_url('/local/lessonation/generate_form.php?courseid=' . $courseid));
 $PAGE->set_context(context_system::instance());
 $PAGE->set_title(get_string('pluginname', 'local_lessonation'));
 $PAGE->set_heading(get_string('generate', 'local_lessonation'));
 $PAGE->set_pagelayout('standard');
-$PAGE->set_button($OUTPUT->single_button(new moodle_url('/local/lessonation/index.php'), get_string('back')));
+$PAGE->set_button($OUTPUT->single_button(new moodle_url('/course/view.php?id=' . $courseid), get_string('back')));
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('pluginname', 'local_lessonation'));
 echo $OUTPUT->box_start('generalbox boxaligncenter boxwidthwide', 'lessonationform');
 
 // Form to create a lesson.
@@ -49,43 +52,44 @@ if ($mform->is_cancelled()) {
     echo $OUTPUT->single_button(new moodle_url('/local/lessonation/index.php'), get_string('back'));
 } else if ($fromform = $mform->get_data()) {
     // TODO: Check if user has rights to create a lesson.
-    echo $fromform->url;
-    $aianswer = new \local_lessonation\sendtoai();
-    // TODO : add  sections to form for creation in right section.
-    $num = $fromform->numberofslides;
-    $prompt = 'build me a presentation of ' . $num . ' slides based on the content of the following webpage: ' . $fromform->url .
-              ' In the following format :
-            { "name": "Lesson Name Test",
-              "description": "Lesson Description Testing",
-              "slides": 
-                [ { "title": "Slide 1 Title",
-                    "content": "<h1>Slide 1 Content</h1><ul><li>Item 1</li><li>Item 2</li>li>Item 3</li>li>Item 4</li></ul>" },
-                  { "title": "Slide 2 Title",
-                    "content": "<h1>Slide 2 Content</h1><ul><li>Item 3</li><li>Item 4</li>li>Item 3</li>li>Item 4</li></ul>" } ]
-            }
-            Use bullet points in the slides.';
-    // TODO : put here real course context.
-    $context = 1;
-    $result = $aianswer->execute($context, $prompt);
-    if ($result['success']) {
-        $json = $result['generatedcontent'];
-        $lessonation = new \local_lessonation\create();
-        $courseid = $fromform->courseid;
-        $moduleid = $lessonation->json_to_lesson($json, $courseid);
-        echo get_string('lessoncreated', 'local_lessonation');
-        echo $OUTPUT->single_button(new moodle_url('/mod/lesson/view.php', array('id' => $moduleid)),
-                      get_string('clickhere', 'local_lessonation'));
+    $prepare = new \local_lessonation\create();
+    $adhoctaskid = $prepare->prepare_lesson_data($fromform);
+
+    if ($adhoctaskid) {
+        // Insert info to local_lessonation table.
+        $lessonation = new \StdClass();
+        $lessonation->userid = $USER->id;
+        $lessonation->adhocid = $adhoctaskid;
+        $lessonation->state = 0;
+        $lessonation->lessonid = 0;
+        $lessonationid = $DB->insert_record('local_lessonation', $lessonation);
+
+        if (!$lessonationid) {
+            // Error in inserting lessonation record.
+            echo $OUTPUT->notification(get_string('error', 'local_lessonation'), 'notifyproblem');
+            return;
+        }
+
+        // Show the "preparing" GIF and initialize the AMD module.
+        echo '<div id="preparing-gif-container" style="display: none; text-align: center;">' .
+                $OUTPUT->notification(get_string('lessonincreation', 'local_lessonation'), 'notifysuccess') .
+                '<img src="' . $OUTPUT->image_url('preparing', 'local_lessonation') . '" alt="Preparing...">
+              </div>';
+        echo '<div id="status-container" style="text-align: center;"></div>';
+
+        // Include the AMD module.
+        $PAGE->requires->js_call_amd('local_lessonation/check_lesson_state', 'init', [$adhoctaskid]);
+        
     } else {
-        echo get_string('error', 'local_lessonation') . $result['data'];
+        // Error in lesson creation.
+        echo $OUTPUT->notification(get_string('error', 'local_lessonation'), 'notifyproblem');
     }
 } else {
     // Display the form.
     $mform->display();
 }
 
-
 echo $OUTPUT->box_end();
-
 
 echo $OUTPUT->footer();
 
