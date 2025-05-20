@@ -37,10 +37,10 @@ $functions = [
 ];
 
 // Define the services and functions.
-$services = array(
-    'Lessonation Services' => array(
-            'functions' => array ('local_lessonation_check_state'),
+$services = [
+    'Lessonation Services' => [
+            'functions' => ['local_lessonation_check_state'],
             'restrictedusers' => 0,
             'enabled' => 1,
-    )
-);
+    ],
+];

@@ -1,6 +1,6 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-// 
+// This file is part of Moodle - https://moodle.org/
+//
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -8,35 +8,46 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * class for creation functions.
  *
- * @package    local_lessonation
- * @author     Yedidia Klein <yedidia@openapp.co.il>
- * @copyright  Yedidia Klein
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     local_lessonation
+ * @category    admin
+ * @copyright   Yedidia Klein <yedidia@openapp.co.il>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_lessonation;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class responsible for creating lessons in the Lessonation plugin.
+ *
+ * @package    local_lessonation
+ */
 class create {
-    public static function get_user_data($user_id) {
+
+    /**
+     * Retrieves user data from the database.
+     *
+     * @param int $userid The ID of the user.
+     * @return object The user data.
+     * @throws \invalid_parameter_exception If the user ID is invalid.
+     */
+    public static function get_user_data($userid) {
         global $DB;
 
         // Check if the user ID is valid.
-        if (!$user_id || !is_numeric($user_id)) {
-            throw new invalid_parameter_exception('Invalid user ID');
+        if (!$userid || !is_numeric($userid)) {
+            throw new \invalid_parameter_exception('Invalid user ID.');
         }
 
         // Fetch user data from the database.
-        $user = $DB->get_record('user', array('id' => $user_id), '*', MUST_EXIST);
+        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
 
         return $user;
     }
@@ -45,24 +56,12 @@ class create {
      * Converts JSON data to a lesson object and saves it to the database.
      *
      * @param string $json The JSON data representing the lesson.
-     * The JSON should contain the lesson's properties such as name, description, etc. in this format:
-     * {
-     *     "name": "Lesson Name",
-     *     "description": "Lesson Description",
-     *     "slide1": {
-     *         "title": "Slide 1 Title",
-     *         "content": "<h1>Slide 1 Content</h1><ul><li>Item 1.1</li><li>Item 1.2</li></ul>"
-     *     },
-     *     "slide2": {
-     *         "title": "Slide 2 Title",
-     *         "content": "<h1>Slide 2 Content</h1><ul><li>Item 2.1</li><li>Item 2.2</li></ul>"
-     *     }
-     * }
      * @param int $courseid The ID of the course to which the lesson belongs.
-     * @return int The ID of the newly created lesson.
-     * @throws invalid_parameter_exception If the JSON data is invalid.
+     * @param int $sectionid The ID of the course section.
+     * @return int The ID of the newly created lesson module.
+     * @throws \invalid_parameter_exception If the JSON data is invalid.
      */
-    public static function json_to_lesson($json, $courseid) {
+    public static function json_to_lesson($json, $courseid, $sectionid) {
         global $DB;
 
         // Decode the JSON data.
@@ -70,7 +69,7 @@ class create {
 
         // Check if the JSON data is valid.
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new invalid_parameter_exception('Invalid JSON data');
+            throw new \invalid_parameter_exception('Invalid JSON data.');
         }
 
         // Create a new lesson object.
@@ -81,65 +80,57 @@ class create {
         $lesson->timecreated = time();
         $lesson->timemodified = time();
         $lesson->visible = 1; // Set to 1 for visible, 0 for hidden.
-        $lesson->conditions = 'O:8:"stdClass":3:{s:9:"timespent";i:0;s:9:"completed";i:0;s:15:"gradebetterthan";i:0;}	'; // Example condition, adjust as needed.
-        $lesson->grade = 100; // Set to 0 for no grade, adjust as needed.
-        // Add other lesson properties as needed.
+        $lesson->conditions = 'O:8:"stdClass":3:{s:9:"timespent";i:0;s:9:"completed";i:0;s:15:"gradebetterthan";i:0;}';
+        $lesson->grade = 100; // Set to 0 for no grade.
 
         // Insert the lesson into the database.
-        $lesson_id = $DB->insert_record('lesson', $lesson);
+        $lessonid = $DB->insert_record('lesson', $lesson);
 
         // Insert into the modules table.
         $module = new \stdClass();
         $module->course = $courseid;
 
         // Find the module ID for lessons.
-        $moduleid = $DB->get_field('modules', 'id', array('name' => 'lesson'));
+        $moduleid = $DB->get_field('modules', 'id', ['name' => 'lesson']);
         if (!$moduleid) {
-            throw new dml_exception('Module not found');
+            throw new \dml_exception('Module not found.');
         }
         $module->module = $moduleid;
-        $module->instance = $lesson_id;
-
-        // Determine the appropriate section ID.
-        $sectionid = $DB->get_field('course_sections', 'id', array('course' => $courseid, 'section' => 0));
-        if (!$sectionid) {
-            throw new dml_exception('Section not found');
-        }
+        $module->instance = $lessonid;
         $module->section = $sectionid;
-
         $module->added = time();
-        $module->visible = 1; // Set to 1 for visible, 0 for hidden.
-        $module->visibleold = 1; // Set to 1 for visible, 0 for hidden.
-        $module->groupmode = 0; // Set to 0 for no group mode, 1 for groups, 2 for visible groups.
-        $module->groupingid = 0; // Set to the appropriate grouping ID.
-        $module->completion = 0; // Set to 0 for no completion tracking, adjust as needed.
-        $module->completiongradeitemnumber = null; // Set to null for no grade item.
-        $module->completionview = 0; // Set to 0 for no view completion, adjust as needed.
-        $module->completionexpected = 0; // Set to 0 for no expected completion date, adjust as needed.
+        $module->visible = 1;
+        $module->visibleold = 1;
+        $module->groupmode = 0;
+        $module->groupingid = 0;
+        $module->completion = 0;
+        $module->completiongradeitemnumber = null;
+        $module->completionview = 0;
+        $module->completionexpected = 0;
 
         // Insert the module into the course_modules table.
-        $module_id = $DB->insert_record('course_modules', $module);
+        $moduleid = $DB->insert_record('course_modules', $module);
 
         // Update the context table for the module.
         $context = new \stdClass();
         $context->contextlevel = CONTEXT_MODULE;
-        $context->instanceid = $module_id;
+        $context->instanceid = $moduleid;
 
         // Fetch the parent context (course context) to set the path.
-        $parentcontextid = $DB->get_field('context', 'id', array('contextlevel' => CONTEXT_COURSE, 'instanceid' => $courseid));
+        $parentcontextid = $DB->get_field('context', 'id', ['contextlevel' => CONTEXT_COURSE, 'instanceid' => $courseid]);
         if (!$parentcontextid) {
-            throw new dml_exception('Parent context not found');
+            throw new \dml_exception('Parent context not found.');
         }
-        $context->path = $DB->get_field('context', 'path', array('id' => $parentcontextid)) . '/' . $module_id;
+        $context->path = $DB->get_field('context', 'path', ['id' => $parentcontextid]) . '/' . $moduleid;
         $context->depth = substr_count($context->path, '/') + 1;
 
         // Insert the context record.
         $DB->insert_record('context', $context);
 
         // Add the module to the course_sections table.
-        $sequence = $DB->get_field('course_sections', 'sequence', array('id' => $sectionid));
-        $newsequence = $sequence ? $sequence . ',' . $module_id : $module_id;
-        $DB->set_field('course_sections', 'sequence', $newsequence, array('id' => $sectionid));
+        $sequence = $DB->get_field('course_sections', 'sequence', ['id' => $sectionid]);
+        $newsequence = $sequence ? $sequence . ',' . $moduleid : $moduleid;
+        $DB->set_field('course_sections', 'sequence', $newsequence, ['id' => $sectionid]);
 
         // Rebuild the course cache to reflect the changes.
         rebuild_course_cache($courseid, true);
@@ -147,25 +138,24 @@ class create {
         $prev = 0; // Initialize previous page ID for lesson pages.
         // Save slides or other related data as needed to lesson_pages table.
         foreach ($data as $key => $value) {
-            if (strpos($key, 'slides') === 0) { // Check if the key starts with 'slide'
+            if (strpos($key, 'slides') === 0) { // Check if the key starts with 'slides'.
                 foreach ($value as $vkey => $vvalue) {
                     $slide = new \stdClass();
-                    $slide->lessonid = $lesson_id;
+                    $slide->lessonid = $lessonid;
                     $slide->title = $vvalue['title'];
                     $slide->contents = $vvalue['content'];
                     $slide->timecreated = time();
                     $slide->timemodified = time();
-                    $slide->contentsformat = 1; // Set to 1 for HTML format, adjust as needed.
+                    $slide->contentsformat = 1; // Set to 1 for HTML format.
                     $slide->qtype = 20;
-                    $slide->prevpageid = $prev; // Set to 0 for no previous page, adjust as needed.
+                    $slide->prevpageid = $prev; // Set to 0 for no previous page.
                     // Insert the slide into the database.
                     $prev = $DB->insert_record('lesson_pages', $slide);
                 }
 
-                // Set the next page ID for the all slides.
+                // Set the next page ID for all slides.
                 $next = 0; // On last slide, set next page ID to 0.
-                // Fetch all slides for the lesson to update next page IDs.
-                $slides = $DB->get_records('lesson_pages', array('lessonid' => $lesson_id), 'id DESC');
+                $slides = $DB->get_records('lesson_pages', ['lessonid' => $lessonid], 'id DESC');
                 foreach ($slides as $slide) {
                     $slide->nextpageid = $next;
                     $DB->update_record('lesson_pages', $slide);
@@ -173,14 +163,9 @@ class create {
                 }
             }
         }
-        // Return the ID of the newly created lesson.
-        if ($lesson_id === false) {
-            throw new dml_exception('Failed to insert lesson into the database');
-            return false;
-        } else {
-            $lesson_id = (int)$lesson_id;
-        }
-        return $module_id;
+
+        // Return the ID of the newly created lesson module.
+        return $moduleid;
     }
 
     /**
@@ -192,16 +177,27 @@ class create {
     public static function prepare_lesson_data($fromform) {
         global $USER;
 
-        $num = $fromform->numberofslides;
-        $prompt = 'build me a presentation of ' . $num . ' slides based on the content of the following webpage: ' . $fromform->url .
-                  ' In the following format :
+        // Form start num of slides from 0.
+        $num = $fromform->numberofslides + 1;
+
+        // Check if URL is a valid URL or text.
+        if (filter_var($fromform->url, FILTER_VALIDATE_URL) === false) {
+            $promptsubject = ' following subject: ' . $fromform->url . '. ';
+        } else {
+            $promptsubject = ' following webpage: ' . $fromform->url . '. ';
+        }
+        $prompt = 'Build me a presentation of ' . $num . ' slides based on the content of the ' .
+                  $promptsubject .
+                  ' In the following format:
                 { "name": "Lesson Name Test",
                   "description": "Lesson Description Testing",
-                  "slides": 
+                  "slides":
                     [ { "title": "Slide 1 Title",
-                        "content": "<h1>Slide 1 Content</h1><ul><li>Item 1</li><li>Item 2</li>li>Item 3</li>li>Item 4</li></ul>" },
+                        "content": "<h1>Slide 1 Content</h1><ul><li>Item 1</li><li>Item 2</li>
+                        <li>Item 3</li><li>Item 4</li></ul>" },
                       { "title": "Slide 2 Title",
-                        "content": "<h1>Slide 2 Content</h1><ul><li>Item 3</li><li>Item 4</li>li>Item 3</li>li>Item 4</li></ul>" } ]
+                        "content": "<h1>Slide 2 Content</h1><ul><li>Item 3</li><li>Item 4</li>
+                        <li>Item 5</li><li>Item 6</li></ul>" } ]
                 }
                 Use bullet points in the slides.';
 
@@ -211,6 +207,7 @@ class create {
             'prompt' => $prompt,
             'courseid' => $fromform->courseid,
             'userid' => $USER->id,
+            'sectionid' => $fromform->sectionid,
         ]);
         $task->set_component('local_lessonation');
         $task->set_userid($USER->id);
@@ -221,5 +218,4 @@ class create {
 
         return $taskid;
     }
-
 }

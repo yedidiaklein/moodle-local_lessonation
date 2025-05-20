@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Service for checking state of question generation.
+ * Service for checking state of lesson generation.
  *
  * @package     local_lessonation
  * @category    admin
@@ -56,7 +56,7 @@ class check_state extends \external_api {
             new external_single_structure([
                 'state' => new external_value(PARAM_INT, 'State of lesson generation, 0 in work, 1 done'),
                 'lessonid' => new external_value(PARAM_INT, 'Lesson id'),
-                'error' => new external_value(PARAM_TEXT, 'Error message'),])
+                'error' => new external_value(PARAM_TEXT, 'Error message'), ])
         );
     }
     /**

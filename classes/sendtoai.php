@@ -1,6 +1,6 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-// 
+// This file is part of Moodle - https://moodle.org/
+//
 // Moodle is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -8,24 +8,27 @@
 //
 // Moodle is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Version details.
+ * Service for checking state of lesson generation.
  *
- * @package    local_lessonation
- * @author     Yedidia Klein <yedidia@openapp.co.il>
- * @copyright  Yedidia Klein
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     local_lessonation
+ * @category    admin
+ * @copyright   Yedidia Klein <yedidia@openapp.co.il>
+ * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace local_lessonation;
 
-defined('MOODLE_INTERNAL') || die();
-
+/**
+ * Class responsible for sending data to the AI for generation.
+ *
+ * @package     local_lessonation
+ */
 class sendtoai {
 
     /**
@@ -45,12 +48,6 @@ class sendtoai {
         // Context validation and permission check.
         // Get the context from the passed in ID.
         $context = \core\context::instance_by_id($contextid);
-
-        // Check the user has permission to use the AI service.
-        //self::validate_context($context);
-        //if (!utils::is_html_editor_placement_action_available($context, 'generate_text', \core_ai\aiactions\generate_text::class)) {
-        //    throw new \moodle_exception('noeditor', 'aiplacement_editor');
-        //}
 
         // Prepare the action.
         $action = new \core_ai\aiactions\generate_text(
