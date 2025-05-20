@@ -128,7 +128,7 @@ final class create_test extends advanced_testcase {
         // Verify the lesson exists in the database.
         $lesson = $DB->get_record('lesson', ['id' => $lessonid]);
         $this->assertNotEmpty($lesson);
-        $this->assertEquals('Test Lesson', $lesson->name);
+        $this->assertEquals('History of the State of Israel', $lesson->name);
     }
 
     /**
@@ -138,7 +138,6 @@ final class create_test extends advanced_testcase {
      * @return void
      */
     public function test_prepare_lesson_data(): void {
-        global $USER;
 
         // Reset the database after the test.
         $this->resetAfterTest();

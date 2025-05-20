@@ -23,14 +23,16 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
-$string['lessonation'] = 'Lessonation';
-$string['generate'] = 'Generate Lessonation';
-$string['pluginname'] = 'Lessonation';
-$string['lessonationdescription'] = 'Lessonation is a plugin that generates lessons using AI.';
-$string['lessonationdescription_help'] = 'Lessonation is a plugin that generates lessons using AI. It allows users to create lessons based on a given topic and provides an easy way to manage and organize lesson content.';
-$string['numberofslides'] = 'Number of slides';
-$string['lessoncreated'] = 'Lesson created successfully';
+
 $string['clickhere'] = 'Click here to view the lesson';
 $string['error'] = 'Error in lesson creation';
-$string['subject'] = 'Subject or URL';
+$string['generate'] = 'Generate Lessonation';
+$string['lessonation'] = 'Lessonation';
+$string['lessonationdescription'] = 'Lessonation is a plugin that generates lessons using AI.';
+$string['lessonationdescription_help'] = 'Lessonation is a plugin that generates lessons using AI. It allows users to create lessons based on a given topic and provides an easy way to manage and organize lesson content.';
+$string['lessoncreated'] = 'Lesson created successfully';
 $string['lessonincreation'] = 'Lesson is being created. You will be notified when it is ready.';
+$string['nopermissions'] = 'You do not have permission to create lessons.';
+$string['numberofslides'] = 'Number of slides';
+$string['pluginname'] = 'Lessonation';
+$string['subject'] = 'Subject or URL';
